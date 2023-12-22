@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Statement Generator</title>
+    <style>
+        /* Style the tabs */
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+        }
+
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+
+        .expand-btn {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
+            display: inline-block;
+        }
+
+        .details {
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Financial Statement Generator</h1>
+    <form action="/process" method="post" enctype="multipart/form-data">
+        <label for="trialBalance">Upload Trial Balance:</label>
+        <input type="file" name="trialBalance" accept=".csv">
+        <button type="submit">Generate Statements</button>
+    </form>
+
+    <!-- Tabs -->
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'IncomeStatement')">Income Statement</button>
+        <button class="tablinks" onclick="openTab(event, 'FinancialPosition')">Financial Position</button>
+        <button class="tablinks" onclick="openTab(event, 'Cashflow')">Cashflow</button>
+        <button class="tablinks" onclick="openTab(event, 'ChangesInEquity')">Changes in Equity</button>
+    </div>
+
+    <!-- Tab content -->
+    <div id="IncomeStatement" class="tabcontent">
+        {% if income_statement %}
+            <h2>Income Statement</h2>
+            <table>
+                <tr>
+                    <th>TrialBal443</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                </tr>
+                <tr>
+                    <td>Total Revenue</td>
+                    <td></td>
+                    <td>{{ income_statement['Total Revenue'] }}</td>
+                    <td>
+                        <span class="expand-btn" onclick="toggleDetails('revenue-details')">Expand</span>
+                        <div id="revenue-details" class="details">
+                            {% for item, value in revenue_details.items() %}
+                                <p>{{ item }}: {{ value }}</p>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Total Expenses</td>
+                    <td></td>
+                    <td>{{ income_statement['Total Expenses'] }}</td>
+                    <td>
+                        <span class="expand-btn" onclick="toggleDetails('expenses-details')">Expand</span>
+                        <div id="expenses-details" class="details">
+                            {% for item, value in expenses_details.items() %}
+                                <p>{{ item }}: {{ value }}</p>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Operating Profit/ Loss before tax</td>
+                    <td></td>
+                    <td>{{ income_statement['Operating Profit/Loss Before Tax'] }}</td>
+                </tr>
+                <!-- Add more rows for additional statements -->
+            </table>
+        {% endif %}
+    </div>
+
+   <!-- Financial Position Section -->
+<div id="FinancialPosition" class="tabcontent">
+    {% if financial_position %}
+        <h2>Financial Position</h2>
+
+        <table>
+            <tr>
+                <th>Trial443</th>
+                <th>Debit</th>
+                <th>Credit</th>
+            </tr>
+            <!-- Add more rows for additional statements -->
+        </table>
+
+        <!-- Calculate and display total -->
+        <p>
+            <strong>Total Non-Current Assets:</strong>
+            <span id="total-non-current-assets">{{ financial_position['Non-Current Assets Total'] }}</span>
+            <span class="expand-btn" onclick="toggleDetails('non-current-assets-details')">Expand</span>
+        </p>
+
+        <!-- Details of how the total figure was obtained -->
+        <div id="non-current-assets-details" class="details" style="display: none;">
+            {% for account, amount in financial_position['Non-Current Assets Details'].items() %}
+                <p>{{ account }}: {{ amount }}</p>
+            {% endfor %}
+        </div>
+
+        <p>
+            <strong>Total Current Assets:</strong>
+            <span id="total-current-assets">{{ financial_position['Total Current Assets'] }}</span>
+            <span class="expand-btn" onclick="toggleDetails('current-assets-details')">Expand</span>
+        </p>
+
+        <!-- Details of how the total current assets figure was obtained -->
+        <div id="current-assets-details" class="details" style="display: none;">
+            {% for account, amount in financial_position['Current Assets Details'].items() %}
+                <p>{{ account }}: {{ amount }}</p>
+            {% endfor %}
+        </div>
+
+
+         <!-- Display Total Assets -->
+        <p>
+            <strong>Total Assets:</strong>
+            <span id="total-assets">{{ financial_position['Total Assets'] }}</span>
+        </p>
+    {% endif %}
+</div>
+
+    <div id="Cashflow" class="tabcontent">
+        {% if cash_flow %}
+            <h2>Cashflow</h2>
+            <table>
+                <!-- Cashflow table content -->
+            </table>
+        {% endif %}
+    </div>
+
+    <div id="ChangesInEquity" class="tabcontent">
+        {% if changes_in_equity %}
+            <h2>Changes in Equity</h2>
+            <table>
+                <!-- Changes in equity table content -->
+            </table>
+        {% endif %}
+    </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function toggleDetails(id) {
+        $("#" + id).toggle();
+        if (id === 'non-current-assets-details') {
+            $("#revenue-details, #expenses-details").hide();
+        } else {
+            $("#non-current-assets-details").hide();
+        }
+    }
+
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+</script>
+
+</body>
+</html>
+
+
